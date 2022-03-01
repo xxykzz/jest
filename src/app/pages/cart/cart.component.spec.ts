@@ -64,10 +64,27 @@ describe('cart component', () => {
         // instanciamos el componente y lo extraemos del testBed , crea el componente con la funcion createComponent que recibe como parametro el tipo
         // del componente que creara
         fixture = TestBed.createComponent(CartComponent);
+        // injectamos el servicio antes de cada test
+        const service =  fixture.debugElement.injector.get(BookService);
         // instanciamos el componente desde el fixture
         component = fixture.componentInstance;
         // con esto entrara por el metodo onInit, y realizara lo que hace en el onInit
         fixture.detectChanges();
+        // agregamos los espias necesarios para los metodos que se ejecutan en el ciclo de vida onInit de nuestro componente
+        // en este caso retornaremos del metodo del servicio getBooksFromCart nuestra listBook declarada previamente
+        // metodo onInit: 
+        // ngOnInit(): void {
+        // this.listCartBook = this._bookService.getBooksFromCart();
+        // this.totalPrice = this.getTotalPrice(this.listCartBook);
+        // getBooksFromCart es reemplazado por '() => listBook'
+        jest.spyOn(service, 'getBooksFromCart').mockImplementation(() => listBook);
+    })
+
+    afterEach( () => {
+        // destruye la instancia del testbed
+        fixture.destroy();
+        // resetea los mocks luego de cada test
+        jest.resetAllMocks();
     })
 
     // primer test, chequeamos que se este instanciando el componente
@@ -192,6 +209,6 @@ describe('cart component', () => {
 
         expect(component.listCartBook.length).toBe(0);
         expect(spy).toHaveBeenCalledTimes(1);
-    })
+    })    
   }
 );

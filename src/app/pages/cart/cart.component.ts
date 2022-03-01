@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { BookService } from '../../services/book.service';
-import { Book } from '../../models/book.model';
+import { Book } from '../../models/book.model'
+
 
 @Component({
   selector: 'app-cart',
@@ -32,7 +33,7 @@ export class CartComponent implements OnInit {
 
   public onInputNumberChange(action: string, book: Book): void {
     const amount = action === 'plus' ? book.amount + 1 : book.amount - 1;
-    book.amount = Number(amount);
+    book.amount = Number(amount); 
     this.listCartBook = this._bookService.updateAmountBook(book);
     this.totalPrice = this.getTotalPrice(this.listCartBook);
   }
