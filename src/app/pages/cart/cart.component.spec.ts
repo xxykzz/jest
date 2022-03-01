@@ -3,9 +3,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { BookService } from '../../services/book.service';
 import { Book } from '../../models/book.model';
-import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFactory, CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 
-// craamos una nueva variable que sera utilizada por varios test (getTotalAmount)
+// craamos un mock para utilizar en nuestros tests
 const listBook: Book[] = [
     {
         name: '',
@@ -30,6 +30,7 @@ const listBook: Book[] = [
     }
 ]
 
+// -------------------------------------------------CONFIGURACION DE LA SUITE--------------------------------------------------------
 
 // declaramos el componente dentro del describe
 describe('cart component', () => {
@@ -88,13 +89,58 @@ describe('cart component', () => {
         expect(totalPrice).not.toBeNull();
     })
 
+    // ----------------------------------------------------METODOS SIN RETURN------------------------------------
 
-    //public getTotalPrice(listCartBook: Book[]): number {
-    //let totalPrice = 0;
-    //listCartBook.forEach((book: Book) => {
-    //   totalPrice += book.amount * book.price;
-    //   });
-    //return totalPrice;
-    //}
+    //test a metodos SIN RETURN (SPYON) 
+    // public onInputNumberChange(action: string, book: Book): void {
+    // const amount = action === 'plus' ? book.amount + 1 : book.amount - 1;
+    // book.amount = Number(amount);
+    // this.listCartBook = this._bookService.updateAmountBook(book);
+    // this.totalPrice = this.getTotalPrice(this.listCartBook);
 
-});
+    it('Deberia calcular correctamente el numero de items en el carrito (onInputNumberChange)', () => {
+        // declaramos el primer parametro que nos pide la funcion 
+        const action = 'plus';
+        // declaramos el segundo parametro que nos solicita la funcion
+        const book: Book = {
+            name: '',
+            author: '',
+            isbn: '',
+            price: 15,
+            amount: 2,
+        };
+        // declaramos una constante que nos dara acceso al servicio privado y sus metodos dentro del test 
+        // version superior a angular 9
+        const service =  fixture.debugElement.injector.get(BookService);
+        //version anterior a angular 9
+        // -------------------------------------------------------------------------------------------------
+        // const serviceDos = TestBed.get(BookService)
+        // si lo fueramos a utilizar varias veces podriamos declarar fuera del test de forma global en el beforeEach
+
+        // creando el primer espia:
+        // el metodo spyOn recibe dos prametros, el primero sera el nombre del servicio / comonente a espiar
+        // y el segundo sera el nombre del metodo a espiar.
+        // el metodo spyOn nos permite acceder a sus funciones mediante la sintaxis de punto y accederemos al metodo llamado
+        // mockImplementation(), este metodo recibira como parametro una funcion anonima que sera la que se ejecutara
+        // al llamar al metodo 'updateAmountBook' que se encuentra dentro del metodo que estamos probando en este ut
+        // de esta forma nos aseguramos que el metodo haya sido llamado.
+        const spyOne = jest.spyOn(service, 'updateAmountBook').mockImplementation(() => null);
+        
+        // realizamos un nuevo spyOn sobre el siguiente metodo que utiliza onInputNumberChange
+        // como el metodo que estamos espiando en este caso, SI esta dentro de nuestro component instanciado
+        // no necesitamos pasarle el servicio injectado, sino solo component.
+        const spyTwo = jest.spyOn(component, 'getTotalPrice').mockImplementation(() => null);
+
+        // llamamos al metodo que estamos testeando
+        component.onInputNumberChange(action, book)
+
+        // creamos el expect SOBRE LOS SPY mediante el metodo 'toHaveBeenCalled()'
+        expect(spyOne).toHaveBeenCalled();
+        // podemos utilizar para contabilizar las veces que se llamo a un metodo con 'toHaveBeenCalledTimes()'
+        expect(spyTwo).toHaveBeenCalledTimes(1);
+
+    })
+  }
+    
+
+);
