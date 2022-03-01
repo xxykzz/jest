@@ -91,14 +91,7 @@ describe('cart component', () => {
 
     // ----------------------------------------------------METODOS SIN RETURN------------------------------------
 
-    //test a metodos SIN RETURN (SPYON) 
-    // public onInputNumberChange(action: string, book: Book): void {
-    // const amount = action === 'plus' ? book.amount + 1 : book.amount - 1;
-    // book.amount = Number(amount);
-    // this.listCartBook = this._bookService.updateAmountBook(book);
-    // this.totalPrice = this.getTotalPrice(this.listCartBook);
-
-    it('Deberia calcular correctamente el numero de items en el carrito (onInputNumberChange)', () => {
+    it('Deberia aumentar correctamente el numero de items en el carrito (onInputNumberChange)', () => {
         // declaramos el primer parametro que nos pide la funcion 
         const action = 'plus';
         // declaramos el segundo parametro que nos solicita la funcion
@@ -130,17 +123,75 @@ describe('cart component', () => {
         // como el metodo que estamos espiando en este caso, SI esta dentro de nuestro component instanciado
         // no necesitamos pasarle el servicio injectado, sino solo component.
         const spyTwo = jest.spyOn(component, 'getTotalPrice').mockImplementation(() => null);
-
+        // chequeamos la cantidad inicial de book
+        expect(book.amount).toBe(2);
         // llamamos al metodo que estamos testeando
         component.onInputNumberChange(action, book)
-
+        // chequeamos la cantidad luego de llamar al metodo que aumenta la cantidad de book
+        expect(book.amount).toBe(3);
+        
         // creamos el expect SOBRE LOS SPY mediante el metodo 'toHaveBeenCalled()'
         expect(spyOne).toHaveBeenCalled();
         // podemos utilizar para contabilizar las veces que se llamo a un metodo con 'toHaveBeenCalledTimes()'
         expect(spyTwo).toHaveBeenCalledTimes(1);
 
     })
-  }
-    
 
+    // creamos el mismo test para la casuistica decremental
+    it('Deberia decrementar correctamente el numero de items en el carrito (onInputNumberChange)', () => { 
+        const action = 'minus';
+        const book: Book = {
+            name: '',
+            author: '',
+            isbn: '',
+            price: 15,
+            amount: 2,
+        };
+
+        const service =  fixture.debugElement.injector.get(BookService);
+
+        const spyOne = jest.spyOn(service, 'updateAmountBook').mockImplementation(() => null);
+        const spyTwo = jest.spyOn(component, 'getTotalPrice').mockImplementation(() => null);
+        expect(book.amount).toBe(2);
+        
+        component.onInputNumberChange(action, book)
+        expect(book.amount).toBe(1);
+        
+        expect(spyOne).toHaveBeenCalled();
+        expect(spyTwo).toHaveBeenCalledTimes(1);
+
+    })
+
+    // test a metodo que llama a METODO PRIVADO
+    it('el componente realiza la llamada correctamente(onClearCart)', () => {
+        // creamos el espia para el metodo que es llamado en el metodo privado
+        const service =  fixture.debugElement.injector.get(BookService);
+        const spy = jest.spyOn(service, 'removeBooksFromCart').mockImplementation(() => null)
+        // creamos el espia para el metodo propio del componente sin simular el mock, en este caso no nos interesa tener una
+        // implementacion mock
+        const spyTwo = jest.spyOn(component as any, '_clearListCartBook');
+        // inicializamos la variable que necesita el componente en el metodo onClearBook
+        component.listCartBook = listBook;
+        // realizamos la llamada al metodo
+        component.onClearBooks();
+        // esperamos que el metodo que mockeamos dentro de spy sea llamado una vez
+        expect(spy).toBeCalledTimes(1)
+        expect(spyTwo).toBeCalledTimes(1)
+        // esperamos que el metodo haya funcionado correctamente, recordemos que solo testearemos los metodos
+        // nativos de cada componente, y no asi los que son llamados dentro del componente.
+        expect(component.listCartBook.length).toBe(0);
+    })
+
+    // test SOBRE el metodo privado
+    it('comprueba el llamado probando SOBRE el metodo privado', () => {
+        const service =  fixture.debugElement.injector.get(BookService);
+        const spy = jest.spyOn(service, 'removeBooksFromCart').mockImplementation(() => null)
+        component.listCartBook = listBook;
+        // accedemos al metodo privado mediante la sintaxis de [""]()
+        component["_clearListCartBook"]();
+
+        expect(component.listCartBook.length).toBe(0);
+        expect(spy).toHaveBeenCalledTimes(1);
+    })
+  }
 );
