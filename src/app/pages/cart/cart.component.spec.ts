@@ -36,8 +36,7 @@ const listBook: Book[] = [
 describe('cart component', () => {
     // creamos la variable del componente
     let component: CartComponent;
-    // creamos el fixture del componente, con esto podemos traer el servicio del componente 'cart component', con esto
-    // extraemos metodos y variables del componente
+    // creamos el fixture del componente,  con esto extraemos metodos y variables del componente
     let fixture: ComponentFixture<CartComponent>
     //creamos los eventos de este archvo spec, ejemplo: beforeEach
     //se ejecuta antes de cada test
